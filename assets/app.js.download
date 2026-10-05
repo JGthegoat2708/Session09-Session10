@@ -1,0 +1,760 @@
+// Portfolio JavaScript - Jainam Golechha - Fixed Version
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing portfolio...');
+    
+    // Ensure all modals are hidden on page load
+    hideAllModals();
+    
+    // Initialize all functionality
+    initNavigation();
+    initMobileMenu();
+    initSkillAnimations();
+    initStatsCounter();
+    initProjectModals();
+    initContactForm();
+    initBackToTop();
+    initScrollAnimations();
+    initHeaderEffects();
+    initTypingAnimation();
+    
+    console.log('Portfolio initialized successfully!');
+});
+
+// Ensure all modals are hidden on load
+function hideAllModals() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    });
+    document.body.style.overflow = '';
+}
+
+// Navigation functionality
+function initNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetSection = document.querySelector(targetId);
+            
+            if (targetSection) {
+                const headerHeight = 80;
+                const targetPosition = targetSection.offsetTop - headerHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Update active link
+                updateActiveNavLink(targetId);
+                
+                // Close mobile menu if open
+                closeMobileMenu();
+            }
+        });
+    });
+    
+    // Handle hero CTA buttons
+    const ctaButtons = document.querySelectorAll('.hero-cta .btn');
+    ctaButtons.forEach(button => {
+        if (button.getAttribute('href') && button.getAttribute('href').startsWith('#')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                if (targetSection) {
+                    const headerHeight = 80;
+                    const targetPosition = targetSection.offsetTop - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    updateActiveNavLink(targetId);
+                }
+            });
+        }
+    });
+}
+
+// Mobile menu functionality
+function initMobileMenu() {
+    const navToggle = document.getElementById('nav-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                navToggle.classList.remove('active');
+            }
+        });
+    }
+}
+
+function closeMobileMenu() {
+    const navMenu = document.getElementById('nav-menu');
+    const navToggle = document.getElementById('nav-toggle');
+    
+    if (navMenu && navToggle) {
+        navMenu.classList.remove('active');
+        navToggle.classList.remove('active');
+    }
+}
+
+// Update active navigation link
+function updateActiveNavLink(targetId = null) {
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (targetId) {
+        // Manually set active link
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === targetId) {
+                link.classList.add('active');
+            }
+        });
+    } else {
+        // Auto-detect based on scroll position
+        const sections = document.querySelectorAll('section[id]');
+        const scrollPosition = window.pageYOffset + 100;
+        let current = 'hero';
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                current = section.getAttribute('id');
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${current}`) {
+                link.classList.add('active');
+            }
+        });
+    }
+}
+
+// Skill bar animations
+function initSkillAnimations() {
+    const skillBars = document.querySelectorAll('.skill-bar-fill, .tool-progress-fill');
+    
+    const animateSkillBars = () => {
+        skillBars.forEach(bar => {
+            const rect = bar.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            
+            if (rect.top < windowHeight * 0.8 && !bar.classList.contains('animated')) {
+                const width = bar.getAttribute('data-width');
+                if (width) {
+                    setTimeout(() => {
+                        bar.style.width = width + '%';
+                        bar.classList.add('animated');
+                    }, Math.random() * 500);
+                }
+            }
+        });
+    };
+    
+    // Initial check
+    setTimeout(animateSkillBars, 500);
+    
+    // Check on scroll with throttling
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                animateSkillBars();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+}
+
+// Stats counter animation
+function initStatsCounter() {
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    const animateCounter = (element) => {
+        const target = parseInt(element.getAttribute('data-target'));
+        const duration = 2000;
+        const increment = target / (duration / 16);
+        let current = 0;
+        
+        const updateCounter = () => {
+            current += increment;
+            if (current < target) {
+                element.textContent = Math.floor(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                element.textContent = target;
+            }
+        };
+        
+        updateCounter();
+    };
+    
+    const observerCallback = (entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                entry.target.classList.add('animated');
+                setTimeout(() => {
+                    animateCounter(entry.target);
+                }, 300);
+            }
+        });
+    };
+    
+    const observer = new IntersectionObserver(observerCallback, {
+        threshold: 0.5
+    });
+    
+    statNumbers.forEach(stat => observer.observe(stat));
+}
+
+// Project modals functionality - FIXED
+function initProjectModals() {
+    const detailButtons = document.querySelectorAll('.project-details-btn');
+    const modals = document.querySelectorAll('.modal');
+    const closeButtons = document.querySelectorAll('.modal-close');
+    const overlays = document.querySelectorAll('.modal-overlay');
+    
+    console.log('Initializing modals:', detailButtons.length, 'buttons found');
+    
+    // Ensure all modals start hidden
+    modals.forEach(modal => {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    });
+    
+    // Open modal function
+    const openModal = (modalId) => {
+        console.log('Opening modal:', modalId);
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            console.log('Modal opened successfully:', modalId);
+        } else {
+            console.error('Modal not found:', modalId);
+        }
+    };
+    
+    // Close modal function - ENHANCED
+    const closeModal = (modal) => {
+        console.log('Closing modal:', modal.id);
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        console.log('Modal closed successfully:', modal.id);
+    };
+    
+    // Close all modals function
+    const closeAllModals = () => {
+        console.log('Closing all modals');
+        modals.forEach(modal => {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        });
+        document.body.style.overflow = '';
+    };
+    
+    // Open modal button click
+    detailButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetModalId = this.getAttribute('data-target');
+            console.log('Button clicked, target modal:', targetModalId);
+            
+            if (targetModalId) {
+                openModal(targetModalId);
+            }
+        });
+    });
+    
+    // Close button click - ENHANCED
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Close button clicked');
+            
+            const modal = this.closest('.modal');
+            if (modal) {
+                closeModal(modal);
+            } else {
+                closeAllModals();
+            }
+        });
+    });
+    
+    // Overlay click - ENHANCED
+    overlays.forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Overlay clicked');
+            
+            const modal = this.closest('.modal');
+            if (modal) {
+                closeModal(modal);
+            } else {
+                closeAllModals();
+            }
+        });
+    });
+    
+    // Escape key - ENHANCED
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            console.log('Escape key pressed');
+            e.preventDefault();
+            closeAllModals();
+        }
+    });
+    
+    // Emergency close function - accessible globally
+    window.closeAllModals = closeAllModals;
+    
+    console.log('Modal system initialized with emergency close function');
+}
+
+// Contact form functionality
+function initContactForm() {
+    const contactForm = document.getElementById('contact-form');
+    
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const subject = formData.get('subject');
+            const message = formData.get('message');
+            
+            // Validate form
+            if (!name || !email || !subject || !message) {
+                showNotification('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            // Create mailto link
+            const mailtoLink = `mailto:jainamgolechha27@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
+            
+            try {
+                // Open email client
+                window.location.href = mailtoLink;
+                
+                // Show success message
+                showNotification('Thank you! Your email client should open with the message pre-filled.', 'success');
+                
+                // Reset form
+                this.reset();
+            } catch (error) {
+                console.error('Error opening email client:', error);
+                showNotification('Error opening email client. Please try again.', 'error');
+            }
+        });
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'success') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification--${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: var(--color-surface);
+        color: var(--color-text);
+        padding: var(--space-16) var(--space-20);
+        border-radius: var(--radius-base);
+        box-shadow: var(--shadow-lg);
+        border-left: 4px solid var(--color-${type === 'success' ? 'success' : 'error'});
+        z-index: 9999;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    // Add notification to page
+    document.body.appendChild(notification);
+    
+    // Handle close button
+    const closeButton = notification.querySelector('.notification-close');
+    closeButton.addEventListener('click', () => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        setTimeout(() => notification.remove(), 300);
+    });
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Back to top button
+function initBackToTop() {
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    if (backToTopBtn) {
+        // Show/hide based on scroll position
+        const toggleBackToTop = () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        };
+        
+        window.addEventListener('scroll', toggleBackToTop);
+        
+        // Smooth scroll to top
+        backToTopBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+}
+
+// Scroll animations
+function initScrollAnimations() {
+    const animatedElements = document.querySelectorAll('.project-card, .about-card, .stat-card, .skill-category, .timeline-item, .contact-method');
+    
+    const observerCallback = (entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.classList.contains('fade-in-animated')) {
+                entry.target.classList.add('fade-in-animated');
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    };
+    
+    const observer = new IntersectionObserver(observerCallback, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+    
+    animatedElements.forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(30px)';
+        element.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+        observer.observe(element);
+    });
+}
+
+// Header effects on scroll
+function initHeaderEffects() {
+    const navbar = document.querySelector('.navbar');
+    
+    const handleScroll = () => {
+        if (window.pageYOffset > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+        
+        // Update active nav link
+        updateActiveNavLink();
+    };
+    
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                handleScroll();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+}
+
+// Typing animation for hero section
+function initTypingAnimation() {
+    const typingElement = document.querySelector('.typing-text');
+    if (!typingElement) return;
+    
+    const text = 'Hello, I\'m';
+    const speed = 100;
+    let i = 0;
+    
+    typingElement.textContent = '';
+    
+    const typeWriter = () => {
+        if (i < text.length) {
+            typingElement.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+        } else {
+            // Add cursor blink effect
+            typingElement.style.borderRight = '2px solid var(--color-primary)';
+            typingElement.style.animation = 'blink 1s infinite';
+        }
+    };
+    
+    // Start typing animation after a short delay
+    setTimeout(typeWriter, 1000);
+}
+
+// Utility function to handle external links
+function handleExternalLinks() {
+    const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="mailto:"]');
+    
+    externalLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            
+            if (href.startsWith('mailto:')) {
+                // Let browser handle mailto links
+                return;
+            } else if (href.startsWith('http')) {
+                // External links
+                e.preventDefault();
+                window.open(href, '_blank', 'noopener,noreferrer');
+            }
+        });
+    });
+}
+
+// Add CSS for animations and modal fixes
+function addDynamicStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Modal fixes - ensure proper hiding */
+        .modal.hidden {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        
+        .modal:not(.hidden) {
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes blink {
+            0%, 50% { border-color: transparent; }
+            51%, 100% { border-color: var(--color-primary); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-size: var(--font-size-lg);
+            padding: 0;
+            margin-left: auto;
+        }
+        
+        .notification-close:hover {
+            color: var(--color-text);
+        }
+        
+        /* Mobile menu animation */
+        .nav-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .nav-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .nav-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        /* Smooth transitions for all interactive elements */
+        .project-card,
+        .about-card,
+        .stat-card,
+        .skill-category,
+        .contact-method,
+        .achievement-item,
+        .course-item {
+            transition: all var(--duration-normal) var(--ease-standard);
+        }
+        
+        /* Hover effects */
+        .project-card:hover .project-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .stat-card:hover .stat-icon {
+            animation: bounce 0.6s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+        
+        /* Focus states for accessibility */
+        .btn:focus-visible,
+        .nav-link:focus-visible,
+        .contact-method:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        /* Emergency modal close button */
+        .emergency-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: var(--color-error);
+            color: white;
+            border: none;
+            padding: var(--space-12);
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Loading states */
+        .hero-text > * {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Emergency modal close - accessible from console
+window.emergencyCloseModals = function() {
+    console.log('Emergency close activated');
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    });
+    document.body.style.overflow = '';
+    
+    // Remove any existing emergency buttons
+    const emergencyButtons = document.querySelectorAll('.emergency-close');
+    emergencyButtons.forEach(btn => btn.remove());
+    
+    console.log('All modals closed via emergency function');
+};
+
+// Initialize external links and dynamic styles
+document.addEventListener('DOMContentLoaded', function() {
+    handleExternalLinks();
+    addDynamicStyles();
+    
+    // Add emergency close button if any modals are problematic
+    setTimeout(() => {
+        const visibleModals = document.querySelectorAll('.modal:not(.hidden)');
+        if (visibleModals.length > 0) {
+            console.warn('Detected visible modals on page load, activating emergency close');
+            window.emergencyCloseModals();
+        }
+    }, 1000);
+});
+
+// Loading complete
+window.addEventListener('load', function() {
+    console.log('Portfolio fully loaded and ready!');
+    
+    // Final check for any problematic modals
+    hideAllModals();
+    
+    // Trigger initial animations
+    const heroElements = document.querySelectorAll('.hero-text > *');
+    heroElements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(30px)';
+        element.style.animationDelay = `${index * 0.1}s`;
+    });
+});

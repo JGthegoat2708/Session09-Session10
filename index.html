@@ -7,11 +7,13 @@
         body[unresolved] {opacity: 0; display: block; overflow: hidden; position: relative; } 
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jainam Golechha - Digital Portfolio | Aspiring Software Engineer</title>
+    <title>Jainam Golechha - Digital Portfolio | Aspiring Software Engineer
+        <link rel="icon" href="data:,">
+    </title>
     <meta name="description" content="Digital portfolio of Jainam Golechha, Computer Science Engineering student at JECRC University specializing in software development and AI applications.">
     <!-- Updated CSS paths to use the 'assets' folder -->
     <link rel="stylesheet" href="./assets/style.css">
-    <link rel="stylesheet" href="./assets/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Modal fixes - ensure proper hiding */
         .modal.hidden {
@@ -116,6 +118,11 @@
                 <li><a href="#experience" class="nav-link">Experience</a></li>
                 <li><a href="#education" class="nav-link">Education</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
+                 <li>
+                    <button id="theme-toggle" class="btn btn--outline btn--sm" style="margin-left: 15px; border-radius: 50%; padding: 8px 12px;" aria-label="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
             </ul>
         </div>
     </nav>
@@ -632,7 +639,10 @@
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- Updated JS path to use the 'assets' folder -->
+    <!-- Link your new theme toggle script -->
+    <script src="./assets/theme.js"></script>
+    
+    <!-- Existing JS path -->
     <script src="./assets/app.js.download"></script>
 </body>
 </html>
